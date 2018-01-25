@@ -21,3 +21,7 @@
 2018-01-25 01:50:09,474 INFO  [main] servises.ThrottlingServiceImp - service started
 2018-01-25 01:51:16,932 INFO  [main] servises.ThrottlingServiceImp - service started
 2018-01-25 01:52:40,241 INFO  [main] servises.ThrottlingServiceImp - service started
+2018-01-25 14:35:07,883 INFO  [main] servises.ThrottlingServiceImp - service started
+2018-01-25 14:42:09,731 INFO  [main] servises.ThrottlingServiceImp - service started
+2018-01-25 14:42:21,400 INFO  [main] servises.ThrottlingServiceImp - service started
+2018-01-25 18:21:08,800 INFO  [main] servises.ThrottlingServiceImp - service started

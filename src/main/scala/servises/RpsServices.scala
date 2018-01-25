@@ -1,5 +1,8 @@
 package servises
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
 /**
   * todo
   * 1. to clean Maps ("token" and "userRequests") after disconn or idle interval
@@ -7,7 +10,12 @@ package servises
   *     is absent in the "userRequests"
   */
 object RpsServices extends App {
-  val service = new ThrottlingServiceImp()
+
+  object localSlaService extends SlaService {
+    def getSlaByToken(token: String): Future[Sla] =
+      Future{Sla("test", 10)}
+  }
+  val service = new ThrottlingServiceImp(localSlaService)
   val v: Option[String] = Some("w")
   service.isRequestAllowed(v)
   service.isRequestAllowed(v)

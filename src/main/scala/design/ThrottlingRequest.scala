@@ -30,12 +30,12 @@ object ThrottlingRequest {
     */
   def getUserName(token: Option[String]): Option[String] = {
     token match {
-      case Some(s) => {
+      case Some(s) => users.get(s)/*{
         val usr = users.get(s)
         if (usr == null)
           None
         else usr
-      }
+      }*/
       case None => None
     }
   }
