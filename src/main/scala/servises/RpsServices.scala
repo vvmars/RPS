@@ -13,7 +13,7 @@ object RpsServices extends App {
 
   object localSlaService extends SlaService {
     def getSlaByToken(token: String): Future[Sla] =
-      Future{Sla("test", 10)}
+      Future{Thread.sleep(1000);Sla("test", 10)}
   }
   val service = new ThrottlingServiceImp(localSlaService)
   val v: Option[String] = Some("w")
