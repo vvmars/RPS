@@ -1,8 +1,7 @@
 package design
 
 import java.util.concurrent.ConcurrentHashMap
-//import collection.JavaConverters._
-//import scala.collection.mutable._//ConcurrentMap
+import scala.collection.JavaConversions._
 
 
 import servises.CommonSla
@@ -66,7 +65,12 @@ class UserRequests{
         case _ => commonSla.rps
       }
       //Add user to cache
-      userRequest = userRequests.putIfAbsent(commonSla.user, UserRequest(rps, 0))
+      userRequest = UserRequest(rps, 0)
+      userRequests.putIfAbsent(commonSla.user, userRequest)
+      userRequests.keys().toList.foreach((key:Option[String]) => {
+        val v = userRequests.get(key)
+        println("$key: $v")
+      })
 
 
       /*scala.util.mutable.ConcurrentMap

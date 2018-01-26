@@ -1,6 +1,7 @@
 package design
 
 import java.util.concurrent.ConcurrentHashMap
+import scala.collection.JavaConversions._
 import servises.CommonSla
 
 /**
@@ -21,8 +22,11 @@ object ThrottlingRequest {
 
   def putUserName(token: Option[String], user: Option[String]) = {
     users.putIfAbsent(token.get, user)
-    /*for (s <- users)
-      print(s + " - " )*/
+
+    users.keys().toList.foreach((key:String) => {
+      val v = users.get(key)
+      println("$key: $v")
+    })
   }
 
   /**

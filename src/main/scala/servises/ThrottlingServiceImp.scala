@@ -26,14 +26,16 @@ class ThrottlingServiceImp(val slaService: SlaService) extends ThrottlingService
     res onComplete {
       case Success(res: Sla) => processSla(token, res)
       case Failure(t: Throwable) => println(s"There is no user by provided token: $t")
+      case _ => logger.info(s"Sla future error: %t")
     }
   }
 
   private def getSla(token:Option[String]): CommonSla = {
     var commonSla: CommonSla = null// = CommonSla(null, 0, graceRps)
+    var user: Option[String] = None
     if (token.isDefined) {
       //Check cash
-      var user = ThrottlingRequest.getUserName(token.get)
+      user = ThrottlingRequest.getUserName(token.get)
       if (user == null) {
         //Run service to identify sla
         requestSlaService(token)
@@ -44,7 +46,8 @@ class ThrottlingServiceImp(val slaService: SlaService) extends ThrottlingService
         }
       }
     }
-    else commonSla = CommonSla(None, 0, graceRps)
+    if ((token.isDefined) || user == None)
+      commonSla = CommonSla(None, 0, graceRps)
     commonSla
   }
 
