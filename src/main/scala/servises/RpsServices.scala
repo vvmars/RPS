@@ -2,6 +2,7 @@ package servises
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success}
 
 /**
   * todo
@@ -10,13 +11,24 @@ import scala.concurrent.ExecutionContext.Implicits.global
   *     is absent in the "userRequests"
   */
 object RpsServices extends App {
-
   object localSlaService extends SlaService {
     def getSlaByToken(token: String): Future[Sla] =
-      Future{Thread.sleep(1000);Sla("test", 10)}
+      Future{
+        //Thread.sleep(1000);
+        token match {
+          case "good" => Sla ("good_user", 10)
+          case "bad" => Sla ("bad_user", 1)
+        }
+      }
   }
   val service = new ThrottlingServiceImp(localSlaService)
-  val v: Option[String] = Some("w")
-  service.isRequestAllowed(v)
-  service.isRequestAllowed(v)
+  val good: Option[String] = Some("good")
+  val bad: Option[String] = Some("bad")
+  service.isRequestAllowed(good)
+  service.isRequestAllowed(bad)
+  service.isRequestAllowed(good)
+  service.isRequestAllowed(bad)
+  service.isRequestAllowed(good)
+  service.isRequestAllowed(bad)
+
 }

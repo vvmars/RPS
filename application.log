@@ -27,3 +27,13 @@
 2018-01-25 18:21:08,800 INFO  [main] servises.ThrottlingServiceImp - service started
 2018-01-25 22:08:21,993 INFO  [main] servises.ThrottlingServiceImp - service started
 2018-01-26 03:54:34,748 INFO  [main] servises.ThrottlingServiceImp - service started
+2018-01-26 21:45:43,814 INFO  [main] servises.ThrottlingServiceImp - service started
+2018-01-26 21:45:44,193 INFO  [scala-execution-context-global-13] servises.ThrottlingServiceImp - Sla future error: %t
+2018-01-26 21:48:33,546 INFO  [main] servises.ThrottlingServiceImp - service started
+2018-01-26 21:48:33,887 INFO  [scala-execution-context-global-11] servises.ThrottlingServiceImp - Sla future error: %t
+2018-01-26 21:48:33,926 INFO  [scala-execution-context-global-11] servises.ThrottlingServiceImp - Sla future error: %t
+2018-01-27 21:25:13,229 INFO  [main] servises.ThrottlingServiceImp - service started
+2018-01-27 21:25:13,636 DEBUG [main] servises.ThrottlingServiceImp - unAuthorized user
+2018-01-27 21:25:13,637 INFO  [scala-execution-context-global-11] servises.ThrottlingServiceImp - Sla future error: %t
+2018-01-27 21:25:13,696 DEBUG [main] servises.ThrottlingServiceImp - unAuthorized user
+2018-01-27 21:25:13,696 INFO  [scala-execution-context-global-11] servises.ThrottlingServiceImp - Sla future error: %t
