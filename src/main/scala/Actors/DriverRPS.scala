@@ -6,15 +6,6 @@ import design.{UserRequest, UserRequests}
 
 import scala.concurrent.duration._
 
-class MyActor extends Actor with Timers {
-  val log = Logging(context.system, this)
-
-  def receive = {
-    case "test" ⇒ log.info("received test")
-    case _      ⇒ log.info("received unknown message")
-  }
-}
-
 //#will increase rps
 object DriverRPS {
   //#printer-messages

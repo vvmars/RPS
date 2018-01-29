@@ -31,6 +31,8 @@ object LocalCache {
   var userRequests = new ConcurrentHashMap[Option[String], UserRequest]
 }
 
+//trait UserRequests
+
 /*************************************************
   *
   */

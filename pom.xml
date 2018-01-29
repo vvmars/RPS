@@ -55,6 +55,7 @@
             <artifactId>akka-stream_2.12</artifactId>
             <version>2.5.8</version> <!-- Or whatever the latest version is -->
         </dependency>
+        <!--*************************************************-->
         <!--Integrates ScalaTest into Maven-->
         <dependency>
             <groupId>org.scalatest</groupId>
@@ -64,7 +65,7 @@
         <!--ScalaTest-->
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.11</artifactId>
+            <artifactId>scalatest_2.12</artifactId>
             <version>3.0.4</version>
             <scope>test</scope>
         </dependency>
@@ -81,6 +82,14 @@
             <version>1.10.19</version>
             <scope>test</scope>
         </dependency>
+        <!-- http://scalamock.org/ -->
+        <dependency>
+            <groupId>org.scalamock</groupId>
+            <artifactId>scalamock_2.12</artifactId>
+            <version>4.0.0</version>
+            <scope>test</scope>
+        </dependency>
+
         <!--scalatestMockito-->
         <dependency>
             <groupId>org.scalatest</groupId>

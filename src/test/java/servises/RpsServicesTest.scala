@@ -6,15 +6,17 @@ import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 
 import scala.concurrent.duration._
 
-trait LocalFunSuite extends FunSuite
+//trait LocalFunSuite extends FunSuite
 
 class RpsServicesTest(_system: ActorSystem)
   extends TestKit(_system)
     with Matchers
-    //with BeforeAndAfterAll
+    with FlatSpecLike
+    with BeforeAndAfterAll
     //with FeatureSpec
-    //with FunSuite
-    with LocalFunSuite
+    //with FunSuiteLike//
+    //with FunSuite(_system)
+    //with LocalFunSuite
     //FlatSpec
     with GivenWhenThen    //with BeforeAndAfterEach
     {
