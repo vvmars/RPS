@@ -31,7 +31,10 @@ object LocalCache {
   var userRequests = new ConcurrentHashMap[Option[String], UserRequest]
 }
 
-//trait UserRequests
+class UserRequests {
+  import UserRequests._
+
+}
 
 /*************************************************
   *
@@ -41,6 +44,12 @@ object UserRequests extends Configuration {
   private val logger = Logger(LoggerFactory.getLogger(this.getClass))
   //private val localCache: LocalCache = new LocalCache()
   private val NANOS = TimeUnit.SECONDS.toNanos(1)
+  //-------------------------------------------------------
+  // Create the actor system
+  val system: ActorSystem = ActorSystem("ThrottlingService")
+  // Create the driver actor
+  val driverRPS: ActorRef = system.actorOf(DriverRPS.props, "driverRPSActor")
+  //-------------------------------------------------------
 
   private def getFormatDateTime(dateTime: LocalDateTime): String = {
     dateTime.format(DateTimeFormatter.ofPattern("H:m:s:S:n"))
@@ -75,7 +84,7 @@ object UserRequests extends Configuration {
     users.get(token)
   }
 
-  def putUserName(token: Option[String], sal: Sla) = {
+  def putUserName(token: Option[String], sal: Sla): Unit = {
     users.putIfAbsent(token.get, sal)
     logger.debug("Putting new user's SLA to cache: {} (all count in cache - {})", sal, users.size())
   }
@@ -103,7 +112,7 @@ object UserRequests extends Configuration {
     * @param userRequest
     * @return sign of possibility to perform request
     */
-  protected def checkRPS(userRequest: UserRequest): Boolean = {
+  def checkRPS(userRequest: UserRequest): Boolean = {
     val timeNow: LocalDateTime = LocalDateTime.now()
     val reqTime: LocalDateTime =
       userRequest.lastReqTime match {
@@ -111,8 +120,7 @@ object UserRequests extends Configuration {
         case _ => userRequest.lastReqTime
       }
     logger.debug(s"Checked time: reqTime - ${getFormatDateTime(reqTime)}, ${getFormatDateTime(timeNow)}, ${getFormatDateTime(reqTime.plusNanos(Math.round(NANOS / userRequest.rps)))}")
-    if (//true
-      reqTime.plusNanos(Math.round(NANOS / userRequest.rps))
+    if (reqTime.plusNanos(Math.round(NANOS / userRequest.rps))
       .isAfter(timeNow)
       ){
       updateCntCancel(userRequest, timeNow)
@@ -158,15 +166,4 @@ object UserRequests extends Configuration {
     val currentUserRequest = getUserRequest(commonSla)
     checkRPS(currentUserRequest)
   }
-
-  //************************************************************
-  // Create the 'helloAkka' actor system
-  val system: ActorSystem = ActorSystem("ThrottlingService")
-
-  //#create-actors
-  // Create the driver actor
-  val driverRPS: ActorRef = system.actorOf(DriverRPS.props, "driverRPSActor")
-
-  //#create-actors
-
 }

@@ -66,4 +66,14 @@ class ThrottlingServiceImp(val slaService: SlaService) extends ThrottlingService
     val commonSla = getSla(token)
     UserRequests.isRequestAllowed(commonSla)
   }
+
+  def getInto(token: Option[String]): String = {
+    Thread.sleep(5)
+    "The test REST service"
+  }
+
+  def getInto(token: Option[String]): String = {
+
+    getInto(token)
+  }
 }
