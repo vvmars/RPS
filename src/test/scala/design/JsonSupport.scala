@@ -1,6 +1,6 @@
 package design
 
-import Actors.RestActor.{GetInfo, GetCheckedInfo}
+import Actors.RestActor.{GetCheckedInfo, GetInfo}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json.DefaultJsonProtocol
 

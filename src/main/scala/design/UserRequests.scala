@@ -9,6 +9,7 @@ import Actors.DriverRPS.DrivingRPS
 import akka.actor.{ActorRef, ActorSystem}
 import com.typesafe.scalalogging.Logger
 import config.Configuration
+import design.LocalCache.{userRequests, users}
 import org.slf4j.LoggerFactory
 import servises.{CommonSla, Sla}
 
@@ -31,17 +32,9 @@ object LocalCache {
   var userRequests = new ConcurrentHashMap[Option[String], UserRequest]
 }
 
-class UserRequests {
-  import UserRequests._
-
-}
-
-/*************************************************
-  *
-  */
-object UserRequests extends Configuration {
+class UserRequests  extends Configuration{
   import LocalCache._
-  private val logger = Logger(LoggerFactory.getLogger(this.getClass))
+
   //private val localCache: LocalCache = new LocalCache()
   private val NANOS = TimeUnit.SECONDS.toNanos(1)
   //-------------------------------------------------------
@@ -49,7 +42,7 @@ object UserRequests extends Configuration {
   val system: ActorSystem = ActorSystem("ThrottlingService")
   // Create the driver actor
   val driverRPS: ActorRef = system.actorOf(DriverRPS.props, "driverRPSActor")
-  //-------------------------------------------------------
+  private val logger = Logger(LoggerFactory.getLogger(this.getClass))
 
   private def getFormatDateTime(dateTime: LocalDateTime): String = {
     dateTime.format(DateTimeFormatter.ofPattern("H:m:s:S:n"))
@@ -122,9 +115,9 @@ object UserRequests extends Configuration {
     logger.debug(s"Checked time: reqTime - ${getFormatDateTime(reqTime)}, ${getFormatDateTime(timeNow)}, ${getFormatDateTime(reqTime.plusNanos(Math.round(NANOS / userRequest.rps)))}")
     if (reqTime.plusNanos(Math.round(NANOS / userRequest.rps))
       .isAfter(timeNow)
-      ){
+    ){
       updateCntCancel(userRequest, timeNow)
-      driverRPS ! DrivingRPS(userRequest)
+      driverRPS ! DrivingRPS(userRequest, increaseRPS _)
       false
     }
     else {
@@ -156,7 +149,6 @@ object UserRequests extends Configuration {
     }
     userRequest
   }
-
   /**
     * Check RPS by user
     * @param commonSla - there is rps for authorized and unauthorized users
@@ -167,3 +159,30 @@ object UserRequests extends Configuration {
     checkRPS(currentUserRequest)
   }
 }
+
+/*************************************************
+  *
+  */
+/*
+
+object UserRequests extends Configuration {
+  import LocalCache._
+
+  //private val localCache: LocalCache = new LocalCache()
+  private val NANOS = TimeUnit.SECONDS.toNanos(1)
+  //-------------------------------------------------------
+  // Create the actor system
+  val system: ActorSystem = ActorSystem("ThrottlingService")
+  // Create the driver actor
+  val driverRPS: ActorRef = system.actorOf(DriverRPS.props, "driverRPSActor")
+  //-------------------------------------------------------
+  /**
+  * Check RPS by user
+  * @param commonSla - there is rps for authorized and unauthorized users
+  * @return result of checking
+  */
+  def isRequestAllowed(commonSla: CommonSla): Boolean = {
+    val currentUserRequest = getUserRequest(commonSla)
+    checkRPS(currentUserRequest)
+  }
+}*/

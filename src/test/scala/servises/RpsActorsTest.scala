@@ -1,23 +1,20 @@
 package servises
 
 import java.time.LocalDateTime
-
 import Actors.DriverRPS
 import Actors.DriverRPS.DrivingRPS
 import org.scalatest._
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestKitBase, TestProbe}
 import design.{UserRequest, UserRequests}
-import design.UserRequests.{driverRPS, system}
-import org.mockito.Mockito
-import org.mockito.invocation.InvocationOnMock
-import org.mockito.stubbing.Answer
-//import org.scalatest.mock.MockitoSugar
-import org.scalatest.mockito.MockitoSugar
 import org.mockito.Mockito._
-import org.mockito.Matchers.any
-
-import scala.concurrent.duration._
+//import org.mockito.Mockito
+//import org.mockito.invocation.InvocationOnMock
+//import org.mockito.stubbing.Answer
+//import org.scalatest.mock.MockitoSugar
+//import org.scalatest.mockito.MockitoSugar
+//import org.mockito.Matchers.any
+//import scala.concurrent.duration._
 
 /*
 
@@ -62,7 +59,7 @@ class RpsActorsTest (_system: ActorSystem)
       val cntSuccessfulReq = 0
       val cntCancelledReq = 0
       val userRequest = UserRequest(rps, dtNow, cntSuccessfulReq, cntCancelledReq)
-      //var spyUserRequest = spy(UserRequests)
+      var spyUserRequest = spy(new UserRequests())
     }
 
   feature("Check Driver Actor") {
@@ -74,7 +71,7 @@ class RpsActorsTest (_system: ActorSystem)
       assert(f.userRequest != null)
 
       When("the message is sent")
-      driverActor ! DrivingRPS(f.userRequest)
+      driverActor ! DrivingRPS(f.userRequest, f.spyUserRequest.increaseRPS _)
       Thread.sleep(200) // will NOT make this block fail
 
       Then("Rps should be increasing")
@@ -88,7 +85,7 @@ class RpsActorsTest (_system: ActorSystem)
       assert(fixture != null)
 
       When("the message is sent")
-      val res = UserRequests.checkRPS(f.userRequest)
+      val res = f.spyUserRequest.checkRPS(f.userRequest)
       Thread.sleep(200) // will NOT make this block fail
 
       Then("Count requests should be increasing")

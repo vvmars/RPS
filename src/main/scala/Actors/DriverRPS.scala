@@ -11,7 +11,7 @@ object DriverRPS {
   //#printer-messages
   def props: Props = Props[DriverRPS]
   //#printer-messages
-  final case class DrivingRPS(userRequest: UserRequest)
+  final case class DrivingRPS(userRequest: UserRequest, increaseRPS:(UserRequest) => Unit)
 }
 //#will increase rps
 
@@ -21,8 +21,8 @@ class DriverRPS extends Actor with ActorLogging with Timers {
   timers.startSingleTimer("DrivingRPS", DrivingRPS, 100.millis)
 
   def receive = {
-    case DrivingRPS(userRequest) => {
-      UserRequests.increaseRPS(userRequest)
+    case DrivingRPS(userRequest, increaseRPS) => {
+      increaseRPS(userRequest)
       log.info(s"Increasing RPS for user: $userRequest.")
     }
   }

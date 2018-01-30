@@ -10,6 +10,7 @@ import config.Configuration
 
 class ThrottlingServiceImp(val slaService: SlaService) extends ThrottlingService with Configuration {
   private val logger = Logger(LoggerFactory.getLogger(this.getClass))
+  private var userRequests: UserRequests = new UserRequests()
 
   logger.info(Constant.RootDelimiter)
   logger.info("SERVICE STARTED")
@@ -20,7 +21,7 @@ class ThrottlingServiceImp(val slaService: SlaService) extends ThrottlingService
   def processSla(token: Option[String], sla: Sla): Unit = {
     if (sla != null & sla.user != null) {
       logger.debug("Sla service provided user's rps: user - {}, rps - {}", sla.user, sla.rps)
-      UserRequests.putUserName(token, sla)
+      userRequests.putUserName(token, sla)
     }
     else logger.debug("Bad responce on token: {}", token)
 
@@ -40,12 +41,12 @@ class ThrottlingServiceImp(val slaService: SlaService) extends ThrottlingService
     var sla: Sla = null
     if (token.isDefined) {
       //Check cache
-      sla = UserRequests.getUserSla(token.get)
+      sla = userRequests.getUserSla(token.get)
       if (sla == null) {
         //Run service to identify sla
         requestSlaService(token)
         //??? How can we identify if the service is completed
-        sla = UserRequests.getUserSla(token.get)
+        sla = userRequests.getUserSla(token.get)
         if (sla != null) {
           commonSla = CommonSla(Some(sla.user), 0, sla.rps)
           logger.debug("User from cache - " + sla.user)
@@ -64,16 +65,8 @@ class ThrottlingServiceImp(val slaService: SlaService) extends ThrottlingService
 
   def isRequestAllowed(token:Option[String]): Boolean = {
     val commonSla = getSla(token)
-    UserRequests.isRequestAllowed(commonSla)
+    userRequests.isRequestAllowed(commonSla)
   }
 
-  def getInto(token: Option[String]): String = {
-    Thread.sleep(5)
-    "The test REST service"
-  }
 
-  def getInto(token: Option[String]): String = {
-
-    getInto(token)
-  }
 }
