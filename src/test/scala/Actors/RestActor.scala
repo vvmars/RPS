@@ -20,8 +20,5 @@ class RestActor extends Actor with ActorLogging {
     case GetInfo(token) =>
       val systemInfo = throttlingServiceImpStub.getInto(token)
       sender() ! systemInfo
-    case GetCheckedInfo(token) =>
-      val systemInfo = throttlingServiceImpStub.getCheckedInfo(token)
-      sender() ! systemInfo
   }
 }

@@ -9,4 +9,5 @@ trait JsonSupport extends SprayJsonSupport {
   import DefaultJsonProtocol._
 
   implicit val getInfoJsonFormat = jsonFormat1(SystemInfo)
+
 }

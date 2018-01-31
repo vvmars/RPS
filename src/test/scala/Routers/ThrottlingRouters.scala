@@ -51,6 +51,7 @@ trait ThrottlingRouters extends JsonSupport {
             val sysInfo: Future[SystemInfo] =
               (restActor ? GetInfo(Some(token))).mapTo[SystemInfo]
             rejectEmptyResponse {
+              log.info("[{}]: GET [{}]", token, sysInfo)
               complete(sysInfo)
             }
           }

@@ -1,5 +1,5 @@
 package design
 
 case class SystemInfo(
-  var size: Int
+  mainSystemInfo: Map[String, String]
 )
