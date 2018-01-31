@@ -1,18 +1,20 @@
-package Routers
+package routers
 
-import Actors.RestActor.GetInfo
+
 
 import scala.concurrent.duration._
 import akka.actor.{ActorRef, ActorSystem}
 import akka.event.Logging
-import akka.http.scaladsl.server.PathMatcher
-import akka.http.scaladsl.server.Directives.{as, concat, entity, onSuccess, pathEnd, pathPrefix, rejectEmptyResponse}
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.{RejectionHandler, Route, ValidationRejection}
 import akka.http.scaladsl.server.directives.MethodDirectives.get
 import akka.http.scaladsl.server.directives.PathDirectives.path
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.util.Timeout
 import design.{JsonSupport, SystemInfo}
+import actors.RestActor.GetInfo
+import akka.http.scaladsl.model.StatusCodes
+
 import scala.concurrent.Future
 import akka.pattern.ask
 
@@ -33,17 +35,21 @@ trait ThrottlingRouters extends JsonSupport {
       pathEnd {
         concat(
           get {
-            val sysInfo: Future[Option[SystemInfo]] =
-              (restActor ? GetInfo(Some("dd"))).mapTo[Option[SystemInfo]]
-            complete(sysInfo)
+            val sysInfo: Future[SystemInfo] =
+              (restActor ? GetInfo(None)).mapTo[SystemInfo]
+            //complete(sysInfo)
+            onSuccess(sysInfo) { performed =>
+              log.info("GET [{}]", sysInfo)
+              complete((StatusCodes.OK, performed))
+            }
           }
         )
       },
       path(Segment) { token =>
         concat(
           get {
-            val sysInfo: Future[Option[SystemInfo]] =
-              (restActor ? GetInfo(Some(token))).mapTo[Option[SystemInfo]]
+            val sysInfo: Future[SystemInfo] =
+              (restActor ? GetInfo(Some(token))).mapTo[SystemInfo]
             rejectEmptyResponse {
               complete(sysInfo)
             }

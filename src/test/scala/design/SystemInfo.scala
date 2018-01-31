@@ -1,5 +1,5 @@
 package design
 
-case class SystemInfo (
-  size: Int
+case class SystemInfo(
+  var size: Int
 )

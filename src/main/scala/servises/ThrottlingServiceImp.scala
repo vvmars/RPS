@@ -51,15 +51,14 @@ class ThrottlingServiceImp(val slaService: SlaService) extends ThrottlingService
           commonSla = CommonSla(Some(sla.user), 0, sla.rps)
           logger.debug("User from cache - " + sla.user)
         }
-        else sla = null
-      }
+       }
     }
     if (token.isEmpty || sla == null) {
-      commonSla = CommonSla(None, 0, getRps)
+      commonSla = CommonSla(None, 0, graceRps)
       logger.debug("unAuthorized user")
     }
     else
-      commonSla = CommonSla(None, 0, graceRps)
+      commonSla = CommonSla(Some(sla.user), 0, getRps)
     commonSla
   }
 

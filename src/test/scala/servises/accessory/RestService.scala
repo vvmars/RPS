@@ -1,11 +1,11 @@
-package servises
+package servises.accessory
 
-import Actors.RestActor
-import Routers.ThrottlingRouters
+import actors.RestActor
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
+import routers.ThrottlingRouters
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration

@@ -1,11 +1,13 @@
-package servises
+package servises.accessory
 
 import design.SystemInfo
+import servises.{Sla, SlaService, ThrottlingServiceImp}
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class ThrottlingServiceImpStub {
+  import ThrottlingServiceImpStub._
   val service = new ThrottlingServiceImp(localSlaService)
 
   object localSlaService extends SlaService {
@@ -20,22 +22,29 @@ class ThrottlingServiceImpStub {
   }
 
   private def getSystemInfo: SystemInfo = {
-    val systemInfo = SystemInfo(0)
+    val systemInfo = startSystemInfo
 
     systemInfo
   }
 
   def getInto(token: Option[String]): SystemInfo = {
     Thread.sleep(5)
-
-    getSystemInfo
+    println(token)
+    token match {
+      case None | Some("*") => SystemInfo(-1)
+      case _ => getSystemInfo
+    }
   }
 
   def getCheckedInfo(token: Option[String]): SystemInfo = {
     val isRequestAllowed = service.isRequestAllowed(token)
     if (isRequestAllowed)
       getSystemInfo
-    else null
+    else emptySystemInfo
   }
 }
 
+object ThrottlingServiceImpStub{
+  val emptySystemInfo = SystemInfo(-1)
+  val startSystemInfo = SystemInfo(0)
+}

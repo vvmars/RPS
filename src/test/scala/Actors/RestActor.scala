@@ -1,8 +1,8 @@
-package Actors
+package actors
 
 import design.{SystemInfo, UserRequests}
 import akka.actor.{Actor, ActorLogging, Props}
-import servises.ThrottlingServiceImpStub
+import servises.accessory.ThrottlingServiceImpStub
 
 object RestActor {
   final case class GetInfo(token: Option[String])

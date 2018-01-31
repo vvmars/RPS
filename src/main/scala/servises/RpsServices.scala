@@ -28,6 +28,7 @@ object RpsServices extends App {
   service.isRequestAllowed(bad)
   service.isRequestAllowed(good)
   service.isRequestAllowed(bad)
+  Thread.sleep(1000)
   service.isRequestAllowed(good)
   service.isRequestAllowed(bad)
 

@@ -4,8 +4,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 
-import Actors.DriverRPS
-import Actors.DriverRPS.DrivingRPS
+import actors.DriverRPS
+import actors.DriverRPS.DrivingRPS
 import akka.actor.{ActorRef, ActorSystem}
 import com.typesafe.scalalogging.Logger
 import config.Configuration
@@ -21,10 +21,12 @@ import scala.collection.JavaConversions._
   */
 case class UserRequest
 (
+  var userName: Option[String],
   var rps: Float,
   var lastReqTime: LocalDateTime,
   var cntSuccessfulReq: Int = 0,
-  var cntCancelledReq: Int = 0
+  var cntCancelledReq: Int = 0,
+  var isUnderIncreasing: Boolean = false
 )
 
 object LocalCache {
@@ -52,18 +54,18 @@ class UserRequests  extends Configuration{
     if (getEnv.equals(Constant.DefEnv))
       userRequests.keys().toList.foreach((key:Option[String]) => {
         val v = userRequests.get(key)
-        logger.debug(s"ALL UserRequestS: size - ${userRequests.size()},  user - $key, rps - ${v.rps}, last time - ${getFormatDateTime(v.lastReqTime)}")
+        logger.debug(s"ALL UserRequestS: userName - ${v.userName}, size - ${userRequests.size()},  user - $key, rps - ${v.rps}, last time - ${getFormatDateTime(v.lastReqTime)}")
       })
   }
 
-  private def printcurrentUserRequest(user: Option[String], currentUserRequest: UserRequest): Unit = {
+  private def printcurrentUserRequest(currentUserRequest: UserRequest): Unit = {
     if (getEnv.equals(Constant.DefEnv)) {
       val time: String =
         currentUserRequest.lastReqTime match {
           case null => ""
           case (s) => getFormatDateTime(s)
         }
-      logger.debug(s"Current UserRequest: user - $user, rps - ${currentUserRequest.rps}, last time - $time")
+      logger.debug(s"Current UserRequest: user - ${currentUserRequest.userName}, rps - ${currentUserRequest.rps}, last time - $time")
     }
   }
 
@@ -83,19 +85,22 @@ class UserRequests  extends Configuration{
   }
 
   def increaseRPS(userRequest: UserRequest): Unit = {
-    userRequest.rps = userRequest.rps * 1.1f
+    this.synchronized {
+      userRequest.rps = userRequest.rps * 1.1f
+      userRequest.isUnderIncreasing = false
+    }
   }
 
   protected def updateCntSuccessTime(userRequest: UserRequest, lastReqTime: LocalDateTime): Unit = {
-    this.synchronized{
+    this.synchronized {
       userRequest.lastReqTime = lastReqTime
       userRequest.cntSuccessfulReq += 1
     }
   }
 
   protected def updateCntCancel(userRequest: UserRequest, lastReqTime: LocalDateTime): Unit = {
-    this.synchronized{
-      userRequest.lastReqTime = lastReqTime
+    this.synchronized {
+      //userRequest.lastReqTime = lastReqTime
       userRequest.cntCancelledReq += 1
     }
   }
@@ -112,15 +117,23 @@ class UserRequests  extends Configuration{
         case null => timeNow
         case _ => userRequest.lastReqTime
       }
-    logger.debug(s"Checked time: reqTime - ${getFormatDateTime(reqTime)}, ${getFormatDateTime(timeNow)}, ${getFormatDateTime(reqTime.plusNanos(Math.round(NANOS / userRequest.rps)))}")
-    if (reqTime.plusNanos(Math.round(NANOS / userRequest.rps))
-      .isAfter(timeNow)
-    ){
+    logger.debug(s"Checked time: userName - ${userRequest.userName}, lastReqTime - ${getFormatDateTime(reqTime)}, now - ${getFormatDateTime(timeNow)}, lastReqTime with RPS - ${getFormatDateTime(reqTime.plusNanos(Math.round(NANOS / userRequest.rps)))}")
+    if (reqTime.plusNanos(Math.round(NANOS / userRequest.rps)).isBefore(timeNow)) {
       updateCntCancel(userRequest, timeNow)
-      driverRPS ! DrivingRPS(userRequest, increaseRPS _)
+      //If SLA is not been increasing
+      if (!userRequest.isUnderIncreasing) {
+        this.synchronized {
+          //Lock increasing
+          userRequest.isUnderIncreasing = true
+        }
+        logger.debug(s"REJECTED /user - ${userRequest.userName}/: Request was rejected. RPS will be increasing")
+        driverRPS ! DrivingRPS(userRequest, increaseRPS _)
+      }
+      else logger.debug(s"REJECTED /user - ${userRequest.userName}/: was rejected. RPS of user is under increasing")
       false
     }
     else {
+      logger.debug(s"ALLOWED /user - ${userRequest.userName}/")
       updateCntSuccessTime(userRequest, timeNow)
       true
     }
@@ -143,9 +156,9 @@ class UserRequests  extends Configuration{
         case _ => commonSla.rps
       }
       //Add user to cache
-      userRequest = UserRequest(rps, null, 1, 0)
+      userRequest = UserRequest(commonSla.user, rps, null, 1, 0)
       userRequests.putIfAbsent(commonSla.user, userRequest)
-      printcurrentUserRequest(commonSla.user, userRequest)
+      printcurrentUserRequest(userRequest)
     }
     userRequest
   }

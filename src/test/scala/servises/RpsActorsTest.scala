@@ -1,8 +1,8 @@
 package servises
 
 import java.time.LocalDateTime
-import Actors.DriverRPS
-import Actors.DriverRPS.DrivingRPS
+import actors.DriverRPS
+import actors.DriverRPS.DrivingRPS
 import org.scalatest._
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestKitBase, TestProbe}
@@ -40,7 +40,7 @@ import org.mockito.Mockito._
 class RpsActorsTest (_system: ActorSystem)
   extends TestKit(_system)
     with Matchers
-    with /*FlatSpecLike*/FeatureSpecLike
+    with FeatureSpecLike
     with GivenWhenThen
     with BeforeAndAfterAll {
 
@@ -58,10 +58,10 @@ class RpsActorsTest (_system: ActorSystem)
       val rps: Float = 100
       val cntSuccessfulReq = 0
       val cntCancelledReq = 0
-      val userRequest = UserRequest(rps, dtNow, cntSuccessfulReq, cntCancelledReq)
+      val userRequest = UserRequest(None, rps, dtNow, cntSuccessfulReq, cntCancelledReq)
       var spyUserRequest = spy(new UserRequests())
     }
-
+  //**************************************************
   feature("Check Driver Actor") {
     scenario("Send current state of rps to increase it") {
 
@@ -77,6 +77,7 @@ class RpsActorsTest (_system: ActorSystem)
       Then("Rps should be increasing")
       assert(f.userRequest.rps == f.rps * 1.1f)
     }
+    //------------------------------------------------
     scenario("Increasing cont of successful requests") {
 
       Given("current state of rps")
