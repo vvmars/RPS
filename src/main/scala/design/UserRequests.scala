@@ -2,6 +2,7 @@ package design
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 
 import actors.DriverRPS
@@ -9,12 +10,10 @@ import actors.DriverRPS.DrivingRPS
 import akka.actor.{ActorRef, ActorSystem}
 import com.typesafe.scalalogging.Logger
 import config.Configuration
-import design.LocalCache.{userRequests, users}
 import org.slf4j.LoggerFactory
 import servises.{CommonSla, Sla}
 
 import scala.collection.JavaConversions._
-
 
 /************************************************
   * case class for the container of the User
@@ -114,11 +113,12 @@ class UserRequests  extends Configuration{
     val timeNow: LocalDateTime = LocalDateTime.now()
     val reqTime: LocalDateTime =
       userRequest.lastReqTime match {
-        case null => timeNow
+        case null => timeNow.minusSeconds(1)
         case _ => userRequest.lastReqTime
       }
+    logger.debug(s"rps - ${userRequest.rps}, 1/rps - ${Math.round(NANOS / userRequest.rps)}")
     logger.debug(s"Checked time: userName - ${userRequest.userName}, lastReqTime - ${getFormatDateTime(reqTime)}, now - ${getFormatDateTime(timeNow)}, lastReqTime with RPS - ${getFormatDateTime(reqTime.plusNanos(Math.round(NANOS / userRequest.rps)))}")
-    if (reqTime.plusNanos(Math.round(NANOS / userRequest.rps)).isBefore(timeNow)) {
+    if (reqTime.plusNanos(Math.round(NANOS / userRequest.rps)).isAfter(timeNow)) {
       updateCntCancel(userRequest, timeNow)
       //If SLA is not been increasing
       if (!userRequest.isUnderIncreasing) {
@@ -156,7 +156,7 @@ class UserRequests  extends Configuration{
         case _ => commonSla.rps
       }
       //Add user to cache
-      userRequest = UserRequest(commonSla.user, rps, null, 1, 0)
+      userRequest = UserRequest(commonSla.user, rps, null, 0, 0)
       userRequests.putIfAbsent(commonSla.user, userRequest)
       printcurrentUserRequest(userRequest)
     }
@@ -172,30 +172,3 @@ class UserRequests  extends Configuration{
     checkRPS(currentUserRequest)
   }
 }
-
-/*************************************************
-  *
-  */
-/*
-
-object UserRequests extends Configuration {
-  import LocalCache._
-
-  //private val localCache: LocalCache = new LocalCache()
-  private val NANOS = TimeUnit.SECONDS.toNanos(1)
-  //-------------------------------------------------------
-  // Create the actor system
-  val system: ActorSystem = ActorSystem("ThrottlingService")
-  // Create the driver actor
-  val driverRPS: ActorRef = system.actorOf(DriverRPS.props, "driverRPSActor")
-  //-------------------------------------------------------
-  /**
-  * Check RPS by user
-  * @param commonSla - there is rps for authorized and unauthorized users
-  * @return result of checking
-  */
-  def isRequestAllowed(commonSla: CommonSla): Boolean = {
-    val currentUserRequest = getUserRequest(commonSla)
-    checkRPS(currentUserRequest)
-  }
-}*/

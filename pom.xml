@@ -17,6 +17,7 @@
         <typesafe.version>3.7.2</typesafe.version>
         <logback.version>1.2.3</logback.version>
         <slf4j.version>1.7.25</slf4j.version>
+        <scalatest.version>2.0.0</scalatest.version>
     </properties>
     <dependencies>
         <dependency>
@@ -88,7 +89,7 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest-maven-plugin</artifactId>
-            <version>2.0.0</version>
+            <version>${scalatest.version}</version>
         </dependency>
         <!--ScalaTest-->
         <dependency>
@@ -131,9 +132,27 @@
                     <target>${java.version}</target>
                 </configuration>
             </plugin>
-
-            <!-- Use build-helper-maven-plugin to add Scala source and test source directories -->
+            <!-- enable scalatest -->
             <plugin>
+              <groupId>org.scalatest</groupId>
+              <artifactId>scalatest-maven-plugin</artifactId>
+              <version>${scalatest.version}</version>
+              <configuration>
+                <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                <junitxml>.</junitxml>
+                <filereports>WDF TestSuite.txt</filereports>
+              </configuration>
+              <executions>
+                <execution>
+                  <id>test</id>
+                  <goals>
+                    <goal>test</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+            <!-- Use build-helper-maven-plugin to add Scala source and test source directories -->
+            <!--<plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>1.10</version>
@@ -163,8 +182,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-
+            </plugin>-->
             <!-- Use scala-maven-plugin for Scala support -->
             <plugin>
                 <groupId>net.alchim31.maven</groupId>

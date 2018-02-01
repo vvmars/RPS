@@ -3,6 +3,7 @@ package servises
 import actors.RestActor
 import routers.ThrottlingRouters
 import akka.actor.ActorRef
+import design.LocalCache
 //import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.{ContentTypes, HttpRequest, MessageEntity, StatusCodes}
 import akka.http.scaladsl.server.Route
@@ -20,6 +21,8 @@ class RestServiceTest
     with GivenWhenThen
     with ThrottlingRouters{
 
+  import ThrottlingServiceImpStub._
+
   override val restActor: ActorRef =
     system.actorOf(RestActor.props, "restActor")
 
@@ -27,7 +30,7 @@ class RestServiceTest
   //**************************************************
   def fixture =
     new {
-      val currSystemInfo = ThrottlingServiceImpStub.getSystemInfo
+      val currSystemInfo = getSystemInfo
     }
   //**************************************************
   feature("Check REST endpoint") {
@@ -62,21 +65,22 @@ class RestServiceTest
       */
       val f = fixture
       val request = Get("/sysinfo/good1")
-      val currValue: Int = f.currSystemInfo.mainSystemInfo(ThrottlingServiceImpStub.CNTSuccessfulReq).toInt
+      val currValue: Int = f.currSystemInfo.mainSystemInfo(CNTSuccessfulReq).toInt
+      Thread.sleep(200) // will NOT make this block fail
 
       When("the request is sent")
       request ~> routes ~> check {
 
         Then("Status should be OK")
-        status should ===(StatusCodes.OK)
+        status should === (StatusCodes.OK)
 
         // we expect the response to be json:
         contentType should ===(ContentTypes.`application/json`)
 
         Then("Statistics should be changed")
-        var systemInfo = ThrottlingServiceImpStub.copyWithChage(
+        var systemInfo = copyWithChage(
           f.currSystemInfo.mainSystemInfo,
-          ThrottlingServiceImpStub.CNTSuccessfulReq,
+          CNTSuccessfulReq,
           (currValue + 1).toString)
 
         entityAs[SystemInfo] should ===(systemInfo)

@@ -6,7 +6,6 @@ import servises.accessory.ThrottlingServiceImpStub
 
 object RestActor {
   final case class GetInfo(token: Option[String])
-  final case class GetCheckedInfo(token: Option[String])
 
   val throttlingServiceImpStub = new ThrottlingServiceImpStub()
 

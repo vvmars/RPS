@@ -1,31 +1,37 @@
 package servises.accessory
 
-import java.time.LocalDateTime
+import config.Configuration
+import design.LocalCache.userRequests
 import design.SystemInfo
 import servises.{Sla, SlaService, ThrottlingServiceImp}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.collection.JavaConversions._
 
-class ThrottlingServiceImpStub {
+class ThrottlingServiceImpStub
+extends Configuration{
 
   import ThrottlingServiceImpStub._
 
-  set
+  set(getRps)
   //println(tokens)
 
-  def set: Unit = {
-    for (i <- 1 to tokenX) {
+  def set (rps: Int = 1): Unit = {
+    tokens = Map[Option[String], Sla]()
+    for (i <- 0 to tokenX) {
       for (t <- tokenName) {
-        tokens += (Some(t + i.toString) -> Sla(t + "_user" + i.toString, i * 2))
+        tokens += (Some(t + i.toString) -> Sla(t + "_user" + i.toString, rps))
       }
     }
   }
 
   def getToken: Option[String] = {
-    val randomtokenX: Int = new scala.util.Random(tokenName.length).nextInt()
-    val randomtokenY: Int = new scala.util.Random(tokenY).nextInt()
+    val randomtokenX: Int = (Math.random() * tokenName.length).toInt
+    val randomtokenY: Int = (Math.random() * tokenY).toInt
     try {
-      //tokens.get(Some(tokenName(randomtokenX) + randomtokenY.toString)))
+      //println("x - " + randomtokenX + ", y - " + randomtokenY)
+      //println(tokens)
       Some(tokenName(randomtokenX) + randomtokenY.toString)
     } catch {
       case ex: NullPointerException => {
@@ -45,6 +51,21 @@ class ThrottlingServiceImpStub {
       }
     }
   }
+
+
+  def getSystemInfoByUserRequests:SystemInfo = {
+    var cntSuccessfulReq: Int = 0
+    var cntCancelledReq: Int = 0
+    userRequests.keys().toList.foreach((key:Option[String]) => {
+      val v = userRequests.get(key)
+      cntSuccessfulReq += v.cntSuccessfulReq
+      cntCancelledReq += v.cntCancelledReq
+    })
+    SystemInfo(Map(
+      CNTSuccessfulReq -> cntSuccessfulReq.toString,
+      CNTCancelledReq -> cntCancelledReq.toString))
+  }
+
   //=====================================================
   def isRequestAllowed(token: Option[String]): Unit = {
     val service = new ThrottlingServiceImp(LocalSlaService)
@@ -57,13 +78,17 @@ class ThrottlingServiceImpStub {
     else cntCancelledReq +=1
   }
 
-  def getInto(token: Option[String]): SystemInfo = {
-    Thread.sleep(5)
+  def getInto(token: Option[String], waitMilles: Int): SystemInfo = {
+    Thread.sleep(waitMilles)
     //println(token)
     if (token.isDefined) {
       isRequestAllowed(token)
     }
     getSystemInfo
+  }
+
+  def getInto(token: Option[String]): SystemInfo = {
+    getInto(token, 0)
   }
   //=====================================================
 }
@@ -79,9 +104,9 @@ object ThrottlingServiceImpStub{
     SystemInfo(Map(
       CNTSuccessfulReq -> 0.toString,
       CNTCancelledReq -> 0.toString))
-  val tokenX: Int = 2
+  val tokenX: Int = 2 //including "0"
   val tokenY: Int = 2
-  val tokenName: Array[String] = Array("good", "bad")
+  val tokenName: Array[String] = Array("good", "bad", "middle", "perfect")
   var tokens: Map[Option[String], Sla] = Map[Option[String], Sla]()
   //=================================================
   //CACHE

@@ -1,6 +1,8 @@
 package servises
 
 import java.time.LocalDateTime
+import java.util.concurrent.atomic.AtomicInteger
+
 import actors.DriverRPS
 import actors.DriverRPS.DrivingRPS
 import org.scalatest._
@@ -17,13 +19,8 @@ import org.mockito.Mockito._
 //import scala.concurrent.duration._
 
 /*
-
-  /*when(spyUserRequest.increaseRPS(any)).thenAnswer(new Answer[Unit] {
-    override def answer(invocation: InvocationOnMock): Unit = {
-      //return something
-    }
-  }*/
-/*  when(spyUserRequest.increaseRPS(any[UserRequest])).thenAnswer(
+when(service.login("", "")).thenReturn(Some(User("")))
+when(spyUserRequest.increaseRPS(any[UserRequest])).thenAnswer(
     new Answer[Unit] {
       override def answer(invocation: InvocationOnMock): Unit = {
         //spyUserRequest.userRequest
@@ -31,12 +28,6 @@ import org.mockito.Mockito._
       }
     })*/
 
-
-  /*
-  *     when(service.login("johndoe", "secret")).thenReturn(Some(User("johndoe")))
-  * */
-
-*/
 class RpsActorsTest (_system: ActorSystem)
   extends TestKit(_system)
     with Matchers
@@ -59,7 +50,7 @@ class RpsActorsTest (_system: ActorSystem)
       val cntSuccessfulReq = 0
       val cntCancelledReq = 0
       val userRequest = UserRequest(None, rps, dtNow, cntSuccessfulReq, cntCancelledReq)
-      var spyUserRequest = spy(new UserRequests())
+      var spyUserRequest = new UserRequests()
     }
   //**************************************************
   feature("Check Driver Actor") {
@@ -78,15 +69,16 @@ class RpsActorsTest (_system: ActorSystem)
       assert(f.userRequest.rps == f.rps * 1.1f)
     }
     //------------------------------------------------
-    scenario("Increasing cont of successful requests") {
+    scenario("Perform check of RPS to increase it") {
 
       Given("current state of rps")
       var f = fixture
       f.userRequest.lastReqTime = LocalDateTime.now()
       assert(fixture != null)
 
-      When("the message is sent")
-      val res = f.spyUserRequest.checkRPS(f.userRequest)
+      When("the message is sent twice")
+      var res = f.spyUserRequest.checkRPS(f.userRequest)
+      res = f.spyUserRequest.checkRPS(f.userRequest)
       Thread.sleep(200) // will NOT make this block fail
 
       Then("Count requests should be increasing")

@@ -55,10 +55,10 @@ class ThrottlingServiceImp(val slaService: SlaService) extends ThrottlingService
     }
     if (token.isEmpty || sla == null) {
       commonSla = CommonSla(None, 0, graceRps)
-      logger.debug("unAuthorized user")
+      logger.debug(s"unAuthorized user /$token/")
     }
     else
-      commonSla = CommonSla(Some(sla.user), 0, getRps)
+      commonSla = CommonSla(Some(sla.user), getRps, 0)
     commonSla
   }
 

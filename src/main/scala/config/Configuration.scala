@@ -14,7 +14,6 @@ trait Configuration {
     * Read the configuration from the application.conf file
     */
   private val config = ConfigFactory.load()
-
   /**
     * All unauthorized user's requests are limited by GraceRps
     */
